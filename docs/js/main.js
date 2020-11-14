@@ -7,131 +7,77 @@ gsap.registerPlugin(ScrollTrigger);
 /**
  * GLOBAL VARIABLES 
  */
+
+const select = (e) => document.querySelector(e);
+const selectAll = (e) => document.querySelectorAll(e);
+
+
 const sections = document.querySelectorAll('.rg__column');
 
+const allLinks = gsap.utils.toArray('.portfolio__categories a');
 const pageBackground = document.querySelector('.fill-background');
 const largeImage = document.querySelector('.portfolio__image--l');
 const smallImage = document.querySelector('.portfolio__image--s');
 const lInside = document.querySelector('.portfolio__image--l .image_inside');
 const sInside = document.querySelector('.portfolio__image--s .image_inside');
-let bodyScrollBar;
-
-const allLinks = gsap.utils.toArray('.portfolio__categories a');
-
-
-const select = (e) => document.querySelector(e);
-const selectAll = (e) => document.querySelectorAll(e);
-
 
 const loader = select('.loader');
 const maskContent = select('.loader__mask--content');
 const mask = select('.loader__mask')
 
 
-/**
- * FIRST LOADING PAGE
- */
-const firstLoadTl = gsap.timeline();
-
-firstLoadTl
-    .set(pageBackground, { backgroundColor: '#BC9296', ease: 'none' })
-    .set(loader, { autoAlpha: 1, ease: 'none' }, 0)
-    .to(maskContent, { delay: 2, autoAlpha: 0 });
+let bodyScrollBar;
 
 
 /**
- * IMAGES LOADED 
- * => imagesLoaded.js
+ * INITIAL FUNCTION
  */
-/** Set up variables  **/
-let loadedImageCount = 0, imageCount;
-const container = select('#main');
+function init() {
+    /**
+     * FIRST LOADING PAGE
+     */
+    const firstLoadTl = gsap.timeline();
 
-/** Set up images loaded **/
-const imgLoad = imagesLoaded(container);
-imageCount = imgLoad.images.length;
-
-updateProgress(0);
-
-/** triggered after each item is loaded **/
-imgLoad.on('progress', function () {
-    /** Increase the num ber of loaded images **/
-    loadedImageCount++;
-    /**  Update Progress **/
-    updateProgress(loadedImageCount);
-});
-
-/**  updateProgress  **/
-function updateProgress(value) {
-    gsap.to(firstLoadTl, { progress: value / imageCount, duration: 0.3, ease: 'power1.out' })
-}
+    firstLoadTl
+        .set(pageBackground, { backgroundColor: '#BC9296', ease: 'none' })
+        .set(loader, { autoAlpha: 1, ease: 'none' }, 0)
+        .to(maskContent, { delay: 2, autoAlpha: 0 });
 
 
-/**  Do whatever when all images are loaded **/
-imgLoad.on('done', function (instance) {
-    /**  Init our loader animation onComplete **/
-    gsap.set(firstLoadTl, { autoAlpha: 0, onComplete: initPageTransition });
-});
+    /** IMAGES LOADED  => imagesLoaded.js */
+    /** Set up variables  **/
+    let loadedImageCount = 0, imageCount;
+    const container = select('#main');
 
+    /** Set up images loaded **/
+    const imgLoad = imagesLoaded(container);
+    imageCount = imgLoad.images.length;
 
+    updateProgress(0);
 
-
-/**
- * INIT LOADER
- */
-function initLoader() {
-
-    const loaderInner = select('.loader .inner');
-    const image = select('.loader__image img');
-    const mask = select('.loader__image--mask');
-    const line1 = select('.loader__title--mask:nth-child(1) span');
-    const line2 = select('.loader__title--mask:nth-child(2) span');
-    const lines = selectAll('.loader__title--mask');
-    const loaderContent = select('.loader__content');
-
-
-    const tlLoaderIn = gsap.timeline({
-        defaults: {
-            duration: 1.1,
-            ease: 'power2.out'
-        },
-        onComplete: () => select('body').classList.remove('is-loading')
+    /** triggered after each item is loaded **/
+    imgLoad.on('progress', function () {
+        /** Increase the num ber of loaded images **/
+        loadedImageCount++;
+        /**  Update Progress **/
+        updateProgress(loadedImageCount);
     });
 
-    tlLoaderIn
-        .set(loaderContent, { autoAlpha: 1 })
-        .fromTo(maskContent, { autoAlpha: 0 }, { duration: .8, autoAlpha: 1 })
-        .to(loaderInner, {
-            scaleY: 0,
-            transformOrigin: 'bottom'
-        }, 1.8)
-        .addLabel('revealImage')
-        .from(mask, { yPercent: 100 }, 'revealImage-=0.6')
-        .from(image, { yPercent: -80 }, 'revealImage-=0.6')
-        .from([line1, line2], { yPercent: 100 }, 'revealImage-=0.4')
-        .to(maskContent, { autoAlpha: 0 }, 1.6)
+    /**  updateProgress  **/
+    function updateProgress(value) {
+        gsap.to(firstLoadTl, { progress: value / imageCount, duration: 0.3, ease: 'power1.out' })
+    }
 
-    const tlLoaderOut = gsap.timeline({
-        defaults: {
-            duration: 1.2,
-            ease: 'power2.inOut'
-        },
-        delay: 1
+
+    /**  Do whatever when all images are loaded **/
+    imgLoad.on('done', function (instance) {
+        /**  Init our loader animation onComplete **/
+        gsap.set(firstLoadTl, { autoAlpha: 0, onComplete: initPageTransition });
     });
-
-    tlLoaderOut
-        .to(lines, { yPercent: -500, stagger: 0.2 }, 0)
-        .to([loader, loaderContent], { yPercent: -100 }, 0.2)
-        .from('#main', { y: 150 }, 0.2)
-        .to(pageBackground, { backgroundColor: '#a3abb1', ease: 'none' }, 0);
-
-
-    const tlLoader = gsap.timeline();
-    tlLoader
-        .add(tlLoaderIn)
-        .add(tlLoaderOut)
-
 }
+
+init();
+
 
 
 /**  PAGE TRANSITIONS 
@@ -161,7 +107,8 @@ function PageTransitionOut({ container }) {
         defaults: {
             duration: 1.1,
             ease: 'power1.inOut'
-        }
+        },
+        onComplete: () => initContent()
     });
 
     tl
@@ -205,6 +152,94 @@ function initPageTransition() {
     })
 }
 
+
+
+/**
+ * INIT LOADER
+ */
+function initLoader() {
+
+    const tlLoaderIn = gsap.timeline({
+        defaults: {
+            duration: 1.1,
+            ease: 'power2.out'
+        },
+        onComplete: () => initContent()
+    });
+
+
+    const loaderInner = select('.loader .inner');
+    const image = select('.loader__image img');
+    const mask = select('.loader__image--mask');
+    const line1 = select('.loader__title--mask:nth-child(1) span');
+    const line2 = select('.loader__title--mask:nth-child(2) span');
+    const lines = selectAll('.loader__title--mask');
+    const loaderContent = select('.loader__content');
+
+
+    tlLoaderIn
+        .set(loaderContent, { autoAlpha: 1 })
+        .fromTo(maskContent, { autoAlpha: 0 }, { duration: .8, autoAlpha: 1 })
+        .to(loaderInner, {
+            scaleY: 0,
+            transformOrigin: 'bottom'
+        }, 1.8)
+        .addLabel('revealImage')
+        .from(mask, { yPercent: 100 }, 'revealImage-=0.6')
+        .from(image, { yPercent: -80 }, 'revealImage-=0.6')
+        .from([line1, line2], { yPercent: 100 }, 'revealImage-=0.4')
+        .to(maskContent, { autoAlpha: 0 }, 1.6)
+
+    const tlLoaderOut = gsap.timeline({
+        defaults: {
+            duration: 1.2,
+            ease: 'power2.inOut'
+        },
+        delay: 1
+    });
+
+    tlLoaderOut
+        .to(lines, { yPercent: -500, stagger: 0.2 }, 0)
+        .to([loader, loaderContent], { yPercent: -100 }, 0.2)
+        .from('#main', { y: 150 }, 0.2)
+        .to(pageBackground, { backgroundColor: '#a3abb1', ease: 'none' }, 0);
+
+
+    const tlLoader = gsap.timeline();
+    tlLoader
+        .add(tlLoaderIn)
+        .add(tlLoaderOut)
+
+}
+
+/**
+ * INIT CONTENT
+ */
+function initContent() {
+
+    select('body').classList.remove('is-loading');
+
+    initSmoothScrollbar();
+    initNavigation();
+    initHeaderTilt();
+    initHoverReveal();
+    initPortfolioHover();
+    initParallax();
+    initPinSteps();
+    initScrollTo();
+
+}
+
+/** GET THE TEXT HEIGHT **/
+const getTextHeight = (textCopy) => textCopy.clientHeight;
+
+
+/** Quick example with gsap tween 
+gsap.to('.fill-background', { backgroundColor: color, ease: 'none' });**/
+/**  CSS Custom Property   **/
+const updateBodyColor = (color) => {
+    document.documentElement.style.setProperty('--bcg-fill-color', color);
+}
 
 
 /**  SMOOTH SCROLLING 
@@ -268,8 +303,9 @@ function initNavigation() {
     }
 
     ScrollTrigger.create({
-        start: 100,
-        end: 'bottom bottom-=20',
+        trigger: '#main',
+        start: 'top top-=100',
+        end: 'bottom bottom-=200',
         toggleClass: {
             targets: 'body',
             className: 'has-scrolled'
@@ -361,10 +397,6 @@ function initHoverReveal() {
     })
 }
 
-/** GET THE TEXT HEIGHT **/
-function getTextHeight(textCopy) {
-    return textCopy.clientHeight;
-}
 
 /** COLUMNS REVEAL TIMELINE **/
 function createHoverReveal(e) {
@@ -509,12 +541,6 @@ function initPinSteps() {
         return vh;
     }
 
-    const updateBodyColor = (color) => {
-        /** Quick example with gsap tween 
-        gsap.to('.fill-background', { backgroundColor: color, ease: 'none' });**/
-        /**  CSS Custom Property   **/
-        document.documentElement.style.setProperty('--bcg-fill-color', color);
-    }
 
     gsap.utils.toArray('.stage').forEach((stage, index) => {
         const navLinks = gsap.utils.toArray('.fixed-nav li');
@@ -554,29 +580,6 @@ function initScrollTo() {
 }
 
 
-
-
-
-
-/**
- * MAIN INIT FUNCTION
- */
-function init() {
-    //initLoader();
-    initSmoothScrollbar();
-    initNavigation();
-    initHeaderTilt();
-    initHoverReveal();
-    initPortfolioHover();
-    initParallax();
-    initPinSteps();
-    initScrollTo();
-}
-
-/**  WNDOW EVENT LOAD **/
-window.addEventListener('load', function () {
-    init();
-});
 
 
 
@@ -623,3 +626,13 @@ handleWidthChange(mq)
 /** CHANGE ADD LISTENER TO THE BREAKPOINT **/
 mq.addListener(handleWidthChange);
 
+
+
+
+
+
+/**  WNDOW EVENT LOAD
+window.addEventListener('load', function () {
+    init();
+});
+**/
